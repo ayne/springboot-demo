@@ -58,8 +58,8 @@ public class UserController extends ErrorExceptions {
     @RequestMapping(method = RequestMethod.POST, value = "/change_password")
     public Object changePassword(@RequestBody @Valid ChangePassword changePassword,
                                  final HttpServletRequest request) throws Exception {
-        String xuserId = getUserId(request);
-        return null;
+        String xUserId = getUserId(request);
+        return userService.changePassword(xUserId, changePassword);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{id}")

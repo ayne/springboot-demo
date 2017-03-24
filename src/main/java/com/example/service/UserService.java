@@ -1,6 +1,7 @@
 package com.example.service;
 
 import com.example.data.User;
+import com.example.dto.request.ChangePassword;
 import com.example.repository.UserRepository;
 import com.example.util.InvalidRequestException;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,10 @@ public class UserService {
         return new BCryptPasswordEncoder().encode(rawPassword);
     }
 
+    public boolean matches(String newPassword, String oldPassword){
+        return new BCryptPasswordEncoder().matches(newPassword, oldPassword);
+    }
+
     public Map<String, Object> createUser(String xUserId, User user) throws ServiceException {
 
         Map<String, Object> response = new LinkedHashMap<>();
@@ -49,6 +54,31 @@ public class UserService {
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("result", userRepository.findAll());
         return response;
+    }
+
+    public Map<String, Object> changePassword(String xUserId, ChangePassword changePassword){
+        if(xUserId == null){
+            throw new InvalidRequestException();
+        }
+        User user = userRepository.findOne(Integer.parseInt(xUserId));
+        if(user != null) {
+            //check if the request has the correct current password of the user
+            if(matches(changePassword.getOldPassword(), user.getPassword())){
+                String encodedPassword = encode(changePassword.getNewPassword());
+                user.setPassword(encodedPassword);
+                userRepository.save(user);
+                Map<String, Object> result = new LinkedHashMap<>();
+                result.put("result", true);
+                return result;
+            }
+            else{
+                throw new InvalidRequestException();
+            }
+
+        }
+        else{
+            throw new InvalidRequestException();
+        }
     }
 
     public List<User> getUsersByEmail(String email){
